@@ -32,13 +32,12 @@ import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 
 
-public class
-  Main
+public class Main
   {
   public static void
   main( String[] args )
     {
-    String inPath = args[ 0 ];
+   /* String inPath = args[ 0 ];
     String outPath = args[ 1 ];
 
     Properties properties = new Properties();
@@ -60,6 +59,25 @@ public class
      .addTailSink( copyPipe, outTap );
 
     // run the flow
-    flowConnector.connect( flowDef ).complete();
+    flowConnector.connect( flowDef ).complete();*/
+	  String inPath = args[0];
+	  String outPath = args[1];
+	  
+	  Properties properties = new Properties();
+	  AppProps.setApplicationJarClass(properties, Main.class);
+	  FlowConnector flowConnector = new Hadoop2MR1FlowConnector(properties);
+	  
+	  Tap inTap = new Hfs(new TextDelimited(true,"\t"),inPath);
+	  Tap outTap = new Hfs(new TextDelimited(true,"\t"),outPath);
+	  
+	  Pipe copyPipe = new Pipe("copy");
+	  FlowDef flowDef = FlowDef.flowDef()
+			  .addSource(copyPipe, inTap)
+			  .addTailSink(copyPipe,outTap);
+	  flowConnector.connect(flowDef).complete();
+	  
+	  
+	  
+	  
     }
   }
