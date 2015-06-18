@@ -45,7 +45,7 @@ public class
   public static void
   main( String[] args )
     {
-    String docPath = args[ 0 ];
+    /*String docPath = args[ 0 ];
     String wcPath = args[ 1 ];
 
     Properties properties = new Properties();
@@ -77,6 +77,41 @@ public class
     // write a DOT file and run the flow
     Flow wcFlow = flowConnector.connect( flowDef );
     wcFlow.writeDOT( "dot/wc.dot" );
-    wcFlow.complete();
+    wcFlow.complete();*/
+	  
+	  String docPath = args[0];
+	  String wcPath = args[1];
+	  
+	  Properties properties = new Properties();
+	  AppProps.setApplicationJarClass(properties, Main.class);
+	  FlowConnector flowConnector = new Hadoop2MR1FlowConnector(properties);
+	  
+	  //Define Taps - source and sink
+	  Tap docTap = new Hfs(new TextDelimited(true,"\t"),docPath);
+	  Tap wcTap = new Hfs(new TextDelimited(true,"\t"),wcPath);
+	  
+	  //to split input data into tokens using Regex operation
+	  Fields token = new Fields("token");
+	  Fields text = new Fields("text");
+	  
+	  RegexSplitGenerator splitter = new RegexSplitGenerator(token,"[\\[\\]\\(\\),.]");
+	  Pipe docPipe = new Each("token",text,splitter,Fields.RESULTS);
+	  
+	  //group and count tokens
+	  Pipe wcPipe = new GroupBy(docPipe, token);
+	  wcPipe = new Every(wcPipe,Fields.ALL,new Count(),Fields.ALL);
+	  
+	// connect the taps, pipes, etc., into a flow
+	    FlowDef flowDef = FlowDef.flowDef()
+	     .setName( "wc" )
+	     .addSource( docPipe, docTap )
+	     .addTailSink( wcPipe, wcTap );
+
+	    // write a DOT file and run the flow
+	    Flow wcFlow = flowConnector.connect( flowDef );
+	    wcFlow.writeDOT( "dot/wc.dot" );
+	    wcFlow.complete();
+	  
+	  
     }
   }
