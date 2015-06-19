@@ -94,7 +94,7 @@ public class
 	  Fields token = new Fields("token");
 	  Fields text = new Fields("text");
 	  
-	  RegexSplitGenerator splitter = new RegexSplitGenerator(token,"[\\[\\]\\(\\),.]");
+	  RegexSplitGenerator splitter = new RegexSplitGenerator(token,"[ \\[\\]\\(\\),.]");
 	  Pipe docPipe = new Each("token",text,splitter,Fields.RESULTS);
 	  
 	  //group and count tokens
